@@ -69,9 +69,10 @@ logger = logging.get_logger(__name__)
 
 
 class EvaluatedHypotheses:
-    def __init__(self, reliability_window=99999999) -> None:
+    def __init__(self, reliability_window=99999999, repetition_detection=False) -> None:
         self.trie = {}
         self.reliability_window = reliability_window
+        self.repetition_detection = repetition_detection
         self.to_add = []
         self.current_max = -float('inf')
 
@@ -2848,7 +2849,11 @@ class GenerationMixin:
                 for idx, (nt, toks) in enumerate(zip(ntokens, tokens)):
                     hypo = toks + [nt,]
                     if (
-                        (nt in toks and not evaluated_hypotheses.is_seen(hypo))
+                        (
+                            evaluated_hypotheses.repetition_detection 
+                            and nt in toks 
+                            and not evaluated_hypotheses.is_seen(hypo)
+                        )
                         or next_token_scores[0,idx] <= evaluated_hypotheses.current_max     
                         or nt == eos_token_id        
                     ):
