@@ -214,6 +214,7 @@ class BeamSearchScorer(BeamScorer):
         pad_token_id: Optional[int] = None,
         eos_token_id: Optional[int] = None,
         beam_indices: Optional[torch.LongTensor] = None,
+        force_finish: Optional[bool] = False,
     ) -> Tuple[torch.Tensor]:
         cur_len = input_ids.shape[-1]
         batch_size = len(self._beam_hyps)
@@ -281,6 +282,8 @@ class BeamSearchScorer(BeamScorer):
                     break
 
             if beam_idx < self.group_size:
+                if force_finish:
+                    break
                 raise ValueError(
                     f"At most {self.group_size} tokens in {next_tokens[batch_idx]} can be equal to `eos_token_id:"
                     f" {eos_token_id}`. Make sure {next_tokens[batch_idx]} are corrected."
